@@ -1,4 +1,4 @@
-const UPI_ID = 'qamarebanihashimas@ybl';
+const UPI_ID = '6362029195@kotakbank';
 const PAYEE_NAME = 'Qamar E Bani Hashim';
 
 export function generateUPIUrl(amount: number): string {

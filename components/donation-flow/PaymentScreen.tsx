@@ -12,7 +12,7 @@ interface PaymentScreenProps {
   onBack: () => void
 }
 
-const UPI_ID = 'qamarebanihashimas@ybl'
+const UPI_ID = '6362029195@kotakbank'
 
 export default function PaymentScreen({ amount, name, phone, onNext, onBack }: PaymentScreenProps) {
   const [copied, setCopied] = useState(false)
