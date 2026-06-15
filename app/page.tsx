@@ -1,65 +1,233 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import dynamic from "next/dynamic";
+
+// Dynamic imports for code splitting
+const FloatingParticles = dynamic(
+  () => import("@/components/ui/FloatingParticles"),
+  { ssr: false }
+);
+const HeroScreen = dynamic(
+  () => import("@/components/donation-flow/HeroScreen"),
+  { ssr: false }
+);
+const DonorDetails = dynamic(
+  () => import("@/components/donation-flow/DonorDetails"),
+  { ssr: false }
+);
+const PaymentScreen = dynamic(
+  () => import("@/components/donation-flow/PaymentScreen"),
+  { ssr: false }
+);
+const ConfirmPayment = dynamic(
+  () => import("@/components/donation-flow/ConfirmPayment"),
+  { ssr: false }
+);
+const ThankYou = dynamic(
+  () => import("@/components/donation-flow/ThankYou"),
+  { ssr: false }
+);
+
+// Animation variants for page transitions
+const pageVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? "-100%" : "100%",
+    opacity: 0,
+  }),
+};
+
+const pageTransition = {
+  type: "spring" as const,
+  stiffness: 300,
+  damping: 30,
+  mass: 0.8,
+};
+
+interface Stats {
+  totalRaised: number;
+  donorCount: number;
+}
 
 export default function Home() {
+  const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState(1);
+
+  // Donation state
+  const [amount, setAmount] = useState(1500);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+
+  // Live stats
+  const [stats, setStats] = useState<Stats | null>(null);
+
+  // Fetch live stats on mount
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/stats");
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch stats:", err);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  const goNext = useCallback(() => {
+    setDirection(1);
+    setStep((s) => Math.min(s + 1, 5));
+  }, []);
+
+  const goBack = useCallback(() => {
+    setDirection(-1);
+    setStep((s) => Math.max(s - 1, 1));
+  }, []);
+
+  const handleConfirmPayment = useCallback(
+    async (data: {
+      confirmed: boolean;
+      utr?: string;
+      screenshot?: string;
+    }) => {
+      try {
+        await fetch("/api/donations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            phone,
+            amount,
+            utr: data.utr || null,
+            screenshotBase64: data.screenshot || null,
+            status: data.confirmed ? "pending" : "incomplete",
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to submit donation:", err);
+      }
+      goNext();
+    },
+    [name, phone, amount, goNext]
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <>
+      <FloatingParticles />
+
+      <div className="relative min-h-dvh flex items-center justify-center overflow-hidden">
+        <AnimatePresence mode="wait" custom={direction}>
+          {step === 1 && (
+            <motion.div
+              key="hero"
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+              className="w-full min-h-dvh flex items-center justify-center"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <HeroScreen
+                amount={amount}
+                setAmount={setAmount}
+                onNext={goNext}
+                stats={stats}
+              />
+            </motion.div>
+          )}
+
+          {step === 2 && (
+            <motion.div
+              key="details"
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+              className="w-full min-h-dvh flex items-center justify-center"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+              <DonorDetails
+                name={name}
+                setName={setName}
+                phone={phone}
+                setPhone={setPhone}
+                amount={amount}
+                onNext={goNext}
+                onBack={goBack}
+              />
+            </motion.div>
+          )}
+
+          {step === 3 && (
+            <motion.div
+              key="payment"
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+              className="w-full min-h-dvh flex items-center justify-center"
+            >
+              <PaymentScreen
+                amount={amount}
+                name={name}
+                phone={phone}
+                onNext={goNext}
+                onBack={goBack}
+              />
+            </motion.div>
+          )}
+
+          {step === 4 && (
+            <motion.div
+              key="confirm"
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+              className="w-full min-h-dvh flex items-center justify-center"
+            >
+              <ConfirmPayment
+                amount={amount}
+                onSubmit={handleConfirmPayment}
+                onBack={goBack}
+              />
+            </motion.div>
+          )}
+
+          {step === 5 && (
+            <motion.div
+              key="thanks"
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+              className="w-full min-h-dvh flex items-center justify-center"
+            >
+              <ThankYou amount={amount} name={name} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
   );
 }

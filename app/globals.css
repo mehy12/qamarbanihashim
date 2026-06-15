@@ -1,26 +1,262 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ========================================
+   DESIGN SYSTEM — QAMAR E BANI HASHIM
+   ======================================== */
+
+@theme {
+  --color-background: #050505;
+  --color-surface: #0d0d0d;
+  --color-primary-red: #6D0F17;
+  --color-secondary-red: #4A0B10;
+  --color-gold: #C8A45D;
+  --color-text-primary: #F5F1E8;
+  --color-text-secondary: #BFAF8A;
+  --color-gold-border: rgba(200, 164, 93, 0.15);
+
+  --font-cinzel: 'Cinzel', serif;
+  --font-inter: 'Inter', sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ========================================
+   BASE STYLES
+   ======================================== */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter);
+  background-color: #050505;
+  color: #F5F1E8;
+  overflow-x: hidden;
+  min-height: 100dvh;
+}
+
+/* ========================================
+   BACKGROUND TREATMENT
+   ======================================== */
+
+.bg-karbala {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bg-karbala::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.bg-karbala::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(109, 15, 23, 0.15) 0%, transparent 70%),
+    linear-gradient(to bottom, rgba(5, 5, 5, 0.7) 0%, rgba(5, 5, 5, 0.9) 100%);
+}
+
+.bg-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ========================================
+   GOLD SLIDER
+   ======================================== */
+
+input[type="range"].slider-gold {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, rgba(200, 164, 93, 0.3), rgba(200, 164, 93, 0.1));
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"].slider-gold::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #C8A45D 0%, #A8863D 100%);
+  border: 2px solid rgba(200, 164, 93, 0.6);
+  box-shadow:
+    0 0 12px rgba(200, 164, 93, 0.3),
+    0 0 24px rgba(200, 164, 93, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="range"].slider-gold::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow:
+    0 0 16px rgba(200, 164, 93, 0.5),
+    0 0 32px rgba(200, 164, 93, 0.2);
+}
+
+input[type="range"].slider-gold::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #C8A45D 0%, #A8863D 100%);
+  border: 2px solid rgba(200, 164, 93, 0.6);
+  box-shadow:
+    0 0 12px rgba(200, 164, 93, 0.3),
+    0 0 24px rgba(200, 164, 93, 0.1);
+  cursor: pointer;
+}
+
+input[type="range"].slider-gold::-moz-range-track {
+  height: 2px;
+  background: linear-gradient(to right, rgba(200, 164, 93, 0.3), rgba(200, 164, 93, 0.1));
+  border-radius: 9999px;
+}
+
+/* ========================================
+   PROGRESS BAR SHIMMER
+   ======================================== */
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.progress-shimmer {
+  background: linear-gradient(
+    90deg,
+    #C8A45D 0%,
+    #E8D49D 30%,
+    #C8A45D 60%,
+    #A8863D 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(109, 15, 23, 0.5); }
+  50% { box-shadow: 0 0 25px rgba(109, 15, 23, 0.9); }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translateY(100vh) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--particle-opacity, 0.2);
+  }
+  90% {
+    opacity: var(--particle-opacity, 0.2);
+  }
+  100% {
+    transform: translateY(-20px) translateX(var(--particle-drift, 20px));
+    opacity: 0;
+  }
+}
+
+/* ========================================
+   GLASSMORPHISM
+   ======================================== */
+
+.glass {
+  background: rgba(13, 13, 13, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(200, 164, 93, 0.15);
+}
+
+.glass-gold {
+  background: rgba(200, 164, 93, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(200, 164, 93, 0.2);
+}
+
+/* ========================================
+   INPUT STYLES
+   ======================================== */
+
+input[type="text"],
+input[type="tel"],
+input[type="number"] {
+  caret-color: #C8A45D;
+}
+
+input::placeholder {
+  color: rgba(191, 175, 138, 0.4);
+}
+
+input:focus {
+  outline: none;
+}
+
+/* Remove number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* ========================================
+   SCROLLBAR
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(200, 164, 93, 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 164, 93, 0.5);
 }
