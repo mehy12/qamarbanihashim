@@ -2,15 +2,8 @@
 
 import { motion } from 'framer-motion'
 import { QRCodeCanvas } from 'qrcode.react'
-import { useState, useCallback, useMemo } from 'react'
-import {
-  generateUPIUrl,
-  getGPayDeepLink,
-  getPhonePeDeepLink,
-  getPaytmDeepLink,
-  getUPIId,
-  detectPlatform,
-} from '@/lib/upi'
+import { useState, useCallback } from 'react'
+import { generateUPIUrl, getUPIId } from '@/lib/upi'
 
 interface PaymentScreenProps {
   amount: number
@@ -24,12 +17,7 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
   const [copied, setCopied] = useState(false)
   const vadapavCount = Math.floor(amount / 15)
 
-  const platform = useMemo(() => detectPlatform(), [])
-
   const upiUrl = generateUPIUrl(amount)
-  const gpayUrl = getGPayDeepLink(amount, platform)
-  const phonepeUrl = getPhonePeDeepLink(amount, platform)
-  const paytmUrl = getPaytmDeepLink(amount, platform)
   const upiId = getUPIId()
 
   const handleCopyUPI = useCallback(async () => {
@@ -59,15 +47,6 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
     a.download = `qamar-donation-qr-${amount}.png`
     a.click()
   }, [amount])
-
-  /**
-   * Open a UPI deep link.
-   * - Android Chrome handles intent:// natively via window.location.href
-   * - iOS Safari handles custom schemes (gpay://, phonepe://) the same way
-   */
-  const openPaymentLink = useCallback((url: string) => {
-    window.location.href = url
-  }, [])
 
   const fadeUp = (delay: number) => ({
     initial: { opacity: 0, y: 20 },
@@ -138,56 +117,26 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
           Download QR
         </motion.button>
 
-        {/* Payment Buttons */}
+        {/* Payment Buttons — all use the same upi://pay URL which opens the system app chooser */}
         <div className="w-full space-y-3 mb-6">
-          <motion.button
-            className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/20 to-[#C8A45D]/10 border-[#C8A45D]/30 text-[#C8A45D]`}
-            onClick={() => openPaymentLink(upiUrl)}
+          <motion.a
+            href={upiUrl}
+            className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/20 to-[#C8A45D]/10 border-[#C8A45D]/30 text-[#C8A45D] block text-center`}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             {...fadeUp(0.35)}
           >
-            Open Any UPI App
-          </motion.button>
-
-          <motion.button
-            className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/15 to-[#C8A45D]/5 border-[#C8A45D]/20 text-[#C8A45D]/90`}
-            onClick={() => openPaymentLink(gpayUrl)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            {...fadeUp(0.4)}
-          >
-            Open Google Pay
-          </motion.button>
-
-          <motion.button
-            className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/15 to-[#C8A45D]/5 border-[#C8A45D]/20 text-[#C8A45D]/90`}
-            onClick={() => openPaymentLink(phonepeUrl)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            {...fadeUp(0.45)}
-          >
-            Open PhonePe
-          </motion.button>
-
-          <motion.button
-            className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/15 to-[#C8A45D]/5 border-[#C8A45D]/20 text-[#C8A45D]/90`}
-            onClick={() => openPaymentLink(paytmUrl)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            {...fadeUp(0.48)}
-          >
-            Open Paytm
-          </motion.button>
+            Pay via UPI App
+          </motion.a>
 
           <motion.button
             className={`${buttonBase} bg-white/5 border-white/10 text-[#BFAF8A]`}
             onClick={handleCopyUPI}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            {...fadeUp(0.5)}
+            {...fadeUp(0.4)}
           >
-            {copied ? '✓ Copied!' : 'Copy UPI ID'}
+            {copied ? '✓ Copied!' : `Copy UPI ID: ${upiId}`}
           </motion.button>
         </div>
 
@@ -197,7 +146,7 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
           onClick={onNext}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          {...fadeUp(0.55)}
+          {...fadeUp(0.45)}
         >
           I&apos;ve Completed Payment →
         </motion.button>
