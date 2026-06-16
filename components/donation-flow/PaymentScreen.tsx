@@ -41,7 +41,24 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
   const handleSaveQR = useCallback(() => {
     const canvas = document.querySelector('#qr-canvas canvas') as HTMLCanvasElement
     if (!canvas) return
-    const url = canvas.toDataURL('image/png')
+    
+    // Add significant padding (quiet zone) for GPay scanner compatibility
+    const padding = 40
+    const newCanvas = document.createElement('canvas')
+    newCanvas.width = canvas.width + padding * 2
+    newCanvas.height = canvas.height + padding * 2
+    
+    const ctx = newCanvas.getContext('2d')
+    if (!ctx) return
+    
+    // Fill white background
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, newCanvas.width, newCanvas.height)
+    
+    // Draw original QR code centered
+    ctx.drawImage(canvas, padding, padding)
+    
+    const url = newCanvas.toDataURL('image/png')
     const a = document.createElement('a')
     a.href = url
     a.download = `qamar-donation-qr-${amount}.png`
