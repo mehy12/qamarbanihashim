@@ -15,3 +15,12 @@ export function generateUPIUrl(amount: number): string {
 export function getUPIId(): string {
   return UPI_ID;
 }
+
+export function openDeepLink(url: string): void {
+  const a = document.createElement('a');
+  a.href = url;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => document.body.removeChild(a), 100);
+}

@@ -6,11 +6,12 @@ import { useState, useCallback } from 'react'
 
 interface ConfirmPaymentProps {
   amount: number
+  paymentMethod?: 'upi' | 'bank' | 'cash' | null
   onSubmit: (data: { confirmed: boolean; utr?: string; screenshot?: string }) => void
   onBack: () => void
 }
 
-export default function ConfirmPayment({ amount, onSubmit, onBack }: ConfirmPaymentProps) {
+export default function ConfirmPayment({ amount, paymentMethod, onSubmit, onBack }: ConfirmPaymentProps) {
   const [confirmed, setConfirmed] = useState<boolean | null>(null)
   const [utr, setUtr] = useState('')
   const [screenshot, setScreenshot] = useState<string | null>(null)
@@ -75,7 +76,7 @@ export default function ConfirmPayment({ amount, onSubmit, onBack }: ConfirmPaym
           className="text-[#BFAF8A] text-center mb-8 text-sm"
           {...fadeUp(0.15)}
         >
-          Have you completed the payment?
+          {paymentMethod === 'cash' ? 'Have you handed over the cash?' : 'Have you completed the payment?'}
         </motion.p>
 
         {/* Radio Options */}
@@ -105,7 +106,7 @@ export default function ConfirmPayment({ amount, onSubmit, onBack }: ConfirmPaym
                 )}
               </div>
               <span className="text-sm text-[#F5F1E8]">
-                Yes, I have completed the payment
+                {paymentMethod === 'cash' ? 'Yes, I have handed over the cash' : 'Yes, I have completed the payment'}
               </span>
             </div>
           </motion.button>
@@ -135,7 +136,7 @@ export default function ConfirmPayment({ amount, onSubmit, onBack }: ConfirmPaym
                 )}
               </div>
               <span className="text-sm text-[#F5F1E8]">
-                Not yet, I&apos;ll pay later
+                {paymentMethod === 'cash' ? "Not yet, I'll hand it over later" : "Not yet, I'll pay later"}
               </span>
             </div>
           </motion.button>
@@ -143,7 +144,7 @@ export default function ConfirmPayment({ amount, onSubmit, onBack }: ConfirmPaym
 
         {/* Conditional Section */}
         <AnimatePresence>
-          {confirmed === true && (
+          {confirmed === true && paymentMethod !== 'cash' && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}

@@ -17,6 +17,18 @@ const DonorDetails = dynamic(
   () => import("@/components/donation-flow/DonorDetails"),
   { ssr: false }
 );
+const PaymentMethodScreen = dynamic(
+  () => import("@/components/donation-flow/PaymentMethodScreen"),
+  { ssr: false }
+);
+const BankDetailsScreen = dynamic(
+  () => import("@/components/donation-flow/BankDetailsScreen"),
+  { ssr: false }
+);
+const CashDetailsScreen = dynamic(
+  () => import("@/components/donation-flow/CashDetailsScreen"),
+  { ssr: false }
+);
 const PaymentScreen = dynamic(
   () => import("@/components/donation-flow/PaymentScreen"),
   { ssr: false }
@@ -66,6 +78,7 @@ export default function Home() {
   const [amount, setAmount] = useState(1500);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'bank' | 'cash' | null>(null);
 
   // Live stats
   const [stats, setStats] = useState<Stats | null>(null);
@@ -88,7 +101,7 @@ export default function Home() {
 
   const goNext = useCallback(() => {
     setDirection(1);
-    setStep((s) => Math.min(s + 1, 5));
+    setStep((s) => Math.min(s + 1, 6));
   }, []);
 
   const goBack = useCallback(() => {
@@ -174,6 +187,28 @@ export default function Home() {
 
           {step === 3 && (
             <motion.div
+              key="payment-method"
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+              className="w-full min-h-dvh flex items-center justify-center"
+            >
+              <PaymentMethodScreen
+                amount={amount}
+                onNext={(method) => {
+                  setPaymentMethod(method);
+                  goNext();
+                }}
+                onBack={goBack}
+              />
+            </motion.div>
+          )}
+
+          {step === 4 && (
+            <motion.div
               key="payment"
               custom={direction}
               variants={pageVariants}
@@ -183,17 +218,31 @@ export default function Home() {
               transition={pageTransition}
               className="w-full min-h-dvh flex items-center justify-center"
             >
-              <PaymentScreen
-                amount={amount}
-                name={name}
-                phone={phone}
-                onNext={goNext}
-                onBack={goBack}
-              />
+              {paymentMethod === 'upi' ? (
+                <PaymentScreen
+                  amount={amount}
+                  name={name}
+                  phone={phone}
+                  onNext={goNext}
+                  onBack={goBack}
+                />
+              ) : paymentMethod === 'bank' ? (
+                <BankDetailsScreen
+                  amount={amount}
+                  onNext={goNext}
+                  onBack={goBack}
+                />
+              ) : (
+                <CashDetailsScreen
+                  amount={amount}
+                  onNext={goNext}
+                  onBack={goBack}
+                />
+              )}
             </motion.div>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <motion.div
               key="confirm"
               custom={direction}
@@ -206,13 +255,14 @@ export default function Home() {
             >
               <ConfirmPayment
                 amount={amount}
+                paymentMethod={paymentMethod}
                 onSubmit={handleConfirmPayment}
                 onBack={goBack}
               />
             </motion.div>
           )}
 
-          {step === 5 && (
+          {step === 6 && (
             <motion.div
               key="thanks"
               custom={direction}

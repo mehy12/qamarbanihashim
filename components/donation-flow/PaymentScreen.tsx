@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { QRCodeCanvas } from 'qrcode.react'
 import { useState, useCallback } from 'react'
-import { generateUPIUrl, getUPIId } from '@/lib/upi'
+import { generateUPIUrl, openDeepLink } from '@/lib/upi'
 
 interface PaymentScreenProps {
   amount: number
@@ -14,30 +14,10 @@ interface PaymentScreenProps {
 }
 
 export default function PaymentScreen({ amount, name, phone, onNext, onBack }: PaymentScreenProps) {
-  const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
   const vadapavCount = Math.floor(amount / 15)
 
   const upiUrl = generateUPIUrl(amount)
-  const upiId = getUPIId()
-
-  const handleCopyUPI = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(upiId)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      const textarea = document.createElement('textarea')
-      textarea.value = upiId
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }, [upiId])
-
   const handleSaveQR = useCallback(() => {
     const canvas = document.querySelector('#qr-canvas canvas') as HTMLCanvasElement
     if (!canvas) return
@@ -166,16 +146,17 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
           </div>
         </motion.div>
 
-        {/* Copy UPI ID fallback */}
+        {/* Open UPI App Button */}
         <motion.button
-          className={`${buttonBase} bg-white/5 border-white/10 text-[#BFAF8A] mb-4`}
-          onClick={handleCopyUPI}
+          className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/20 to-[#C8A45D]/10 border-[#C8A45D]/30 text-[#C8A45D] mb-4`}
+          onClick={() => openDeepLink(upiUrl)}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          {...fadeUp(0.4)}
+          {...fadeUp(0.38)}
         >
-          {copied ? '✓ Copied!' : `Copy UPI ID · ${upiId}`}
+          📱 Open UPI App
         </motion.button>
+
 
         {/* Completed Payment CTA */}
         <motion.button
