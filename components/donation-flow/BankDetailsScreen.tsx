@@ -15,9 +15,9 @@ export default function BankDetailsScreen({ amount, onNext, onBack }: BankDetail
 
   const bankDetails = {
     name: 'Qamar E Bani Hashim',
-    account: '12345678901234',
-    ifsc: 'HDFC0001234',
-    bank: 'HDFC Bank',
+    account: '42140718597',
+    ifsc: 'SBIN0040374',
+    bank: 'STATE BANK OF INDIA',
   }
 
   const handleCopy = useCallback(async (text: string, type: string) => {
@@ -91,12 +91,12 @@ export default function BankDetailsScreen({ amount, onNext, onBack }: BankDetail
               <p className="text-[#F5F1E8] font-medium">{bankDetails.name}</p>
             </div>
           </div>
-          
+
           <div>
             <p className="text-[#BFAF8A] text-xs uppercase tracking-wider mb-1">Account Number</p>
             <div className="flex items-center justify-between">
               <p className="text-[#F5F1E8] font-medium font-mono">{bankDetails.account}</p>
-              <button 
+              <button
                 onClick={() => handleCopy(bankDetails.account, 'account')}
                 className="text-[#C8A45D] text-xs hover:text-[#F5F1E8] transition-colors px-2 py-1 bg-[#C8A45D]/10 rounded"
               >
@@ -109,7 +109,7 @@ export default function BankDetailsScreen({ amount, onNext, onBack }: BankDetail
             <p className="text-[#BFAF8A] text-xs uppercase tracking-wider mb-1">IFSC Code</p>
             <div className="flex items-center justify-between">
               <p className="text-[#F5F1E8] font-medium font-mono">{bankDetails.ifsc}</p>
-              <button 
+              <button
                 onClick={() => handleCopy(bankDetails.ifsc, 'ifsc')}
                 className="text-[#C8A45D] text-xs hover:text-[#F5F1E8] transition-colors px-2 py-1 bg-[#C8A45D]/10 rounded"
               >
