@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { QRCodeCanvas } from 'qrcode.react'
 import { useState, useCallback, useMemo } from 'react'
-import { generateUPIUrl, getUPIId } from '@/lib/upi'
+import { generateUPIUrl, generateIntentUrl, getUPIId } from '@/lib/upi'
 
 interface PaymentScreenProps {
   amount: number
@@ -17,7 +17,6 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
   const [copied, setCopied] = useState(false)
   const vadapavCount = Math.floor(amount / 15)
 
-  // Generate the UPI URL once per render (contains unique tr each time)
   const upiUrl = useMemo(() => generateUPIUrl(amount), [amount])
   const upiId = getUPIId()
 
@@ -48,9 +47,14 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
     a.click()
   }, [amount])
 
-  /** Generate a fresh UPI URL with new tr and open it */
+  /** Open generic UPI chooser (upi://pay) */
   const openUPI = useCallback(() => {
     window.location.href = generateUPIUrl(amount)
+  }, [amount])
+
+  /** Open specific app using intent:// URL with package name */
+  const openApp = useCallback((app: 'gpay' | 'phonepe' | 'paytm') => {
+    window.location.href = generateIntentUrl(amount, app)
   }, [amount])
 
   const fadeUp = (delay: number) => ({
@@ -112,24 +116,25 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
           Download QR
         </motion.button>
 
-        {/* All buttons use the same upi://pay URL — system shows app chooser or opens specific app */}
         <div className="w-full space-y-3 mb-6">
+          {/* Generic UPI — opens default UPI app chooser */}
           <motion.button className={btnP} onClick={openUPI}
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} {...fadeUp(0.35)}>
             Open Any UPI App
           </motion.button>
 
-          <motion.button className={btnS} onClick={openUPI}
+          {/* Specific apps — use intent:// with package name to bypass default handler */}
+          <motion.button className={btnS} onClick={() => openApp('gpay')}
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} {...fadeUp(0.4)}>
             Open Google Pay
           </motion.button>
 
-          <motion.button className={btnS} onClick={openUPI}
+          <motion.button className={btnS} onClick={() => openApp('phonepe')}
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} {...fadeUp(0.45)}>
             Open PhonePe
           </motion.button>
 
-          <motion.button className={btnS} onClick={openUPI}
+          <motion.button className={btnS} onClick={() => openApp('paytm')}
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} {...fadeUp(0.48)}>
             Open Paytm
           </motion.button>
