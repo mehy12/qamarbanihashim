@@ -2,7 +2,15 @@
 
 import { motion } from 'framer-motion'
 import { QRCodeCanvas } from 'qrcode.react'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
+import {
+  generateUPIUrl,
+  getGPayDeepLink,
+  getPhonePeDeepLink,
+  getPaytmDeepLink,
+  getUPIId,
+  detectPlatform,
+} from '@/lib/upi'
 
 interface PaymentScreenProps {
   amount: number
@@ -12,25 +20,27 @@ interface PaymentScreenProps {
   onBack: () => void
 }
 
-const UPI_ID = 'meesamhyder2005-1@oksbi'
-
 export default function PaymentScreen({ amount, name, phone, onNext, onBack }: PaymentScreenProps) {
   const [copied, setCopied] = useState(false)
   const vadapavCount = Math.floor(amount / 15)
 
-  const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent('Qamar E Bani Hashim')}&am=${amount}&cu=INR&tn=${encodeURIComponent('Hadiya Sabeel')}`
-  const gpayUrl = `tez://upi/pay?pa=${UPI_ID}&pn=${encodeURIComponent('Qamar E Bani Hashim')}&am=${amount}&cu=INR&tn=${encodeURIComponent('Hadiya Sabeel')}`
-  const phonepeUrl = `phonepe://pay?pa=${UPI_ID}&pn=${encodeURIComponent('Qamar E Bani Hashim')}&am=${amount}&cu=INR&tn=${encodeURIComponent('Hadiya Sabeel')}`
+  const platform = useMemo(() => detectPlatform(), [])
+
+  const upiUrl = generateUPIUrl(amount)
+  const gpayUrl = getGPayDeepLink(amount, platform)
+  const phonepeUrl = getPhonePeDeepLink(amount, platform)
+  const paytmUrl = getPaytmDeepLink(amount, platform)
+  const upiId = getUPIId()
 
   const handleCopyUPI = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(UPI_ID)
+      await navigator.clipboard.writeText(upiId)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
       // Fallback
       const textarea = document.createElement('textarea')
-      textarea.value = UPI_ID
+      textarea.value = upiId
       document.body.appendChild(textarea)
       textarea.select()
       document.execCommand('copy')
@@ -38,7 +48,7 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
-  }, [])
+  }, [upiId])
 
   const handleDownloadQR = useCallback(() => {
     const canvas = document.querySelector('#qr-canvas canvas') as HTMLCanvasElement
@@ -49,6 +59,15 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
     a.download = `qamar-donation-qr-${amount}.png`
     a.click()
   }, [amount])
+
+  /**
+   * Open a UPI deep link.
+   * - Android Chrome handles intent:// natively via window.location.href
+   * - iOS Safari handles custom schemes (gpay://, phonepe://) the same way
+   */
+  const openPaymentLink = useCallback((url: string) => {
+    window.location.href = url
+  }, [])
 
   const fadeUp = (delay: number) => ({
     initial: { opacity: 0, y: 20 },
@@ -123,7 +142,7 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
         <div className="w-full space-y-3 mb-6">
           <motion.button
             className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/20 to-[#C8A45D]/10 border-[#C8A45D]/30 text-[#C8A45D]`}
-            onClick={() => { window.location.href = upiUrl }}
+            onClick={() => openPaymentLink(upiUrl)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             {...fadeUp(0.35)}
@@ -133,7 +152,7 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
 
           <motion.button
             className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/15 to-[#C8A45D]/5 border-[#C8A45D]/20 text-[#C8A45D]/90`}
-            onClick={() => { window.location.href = gpayUrl }}
+            onClick={() => openPaymentLink(gpayUrl)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             {...fadeUp(0.4)}
@@ -143,12 +162,22 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
 
           <motion.button
             className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/15 to-[#C8A45D]/5 border-[#C8A45D]/20 text-[#C8A45D]/90`}
-            onClick={() => { window.location.href = phonepeUrl }}
+            onClick={() => openPaymentLink(phonepeUrl)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             {...fadeUp(0.45)}
           >
             Open PhonePe
+          </motion.button>
+
+          <motion.button
+            className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/15 to-[#C8A45D]/5 border-[#C8A45D]/20 text-[#C8A45D]/90`}
+            onClick={() => openPaymentLink(paytmUrl)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            {...fadeUp(0.48)}
+          >
+            Open Paytm
           </motion.button>
 
           <motion.button
