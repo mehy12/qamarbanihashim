@@ -1,38 +1,68 @@
 const UPI_ID = 'meesamhyder2005-1@oksbi';
-const UPI_PAYEE_NAME = 'MEESAM HYDER';
+const PAYEE_NAME = 'Qamar E Bani Hashim';
 
-function generateTxnRef(): string {
-  return 'QBH' + Date.now() + Math.random().toString(36).slice(2, 6);
+function generateTxnId(): string {
+  return 'QMR' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
 }
 
-/** UPI URL for QR code and generic "open any UPI app" */
 export function generateUPIUrl(amount: number): string {
-  const tr = generateTxnRef();
-  return `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_PAYEE_NAME)}&am=${amount.toFixed(2)}&cu=INR&tr=${tr}&mc=0000&tn=${encodeURIComponent('Hadiya Sabeel')}`;
+  const params = new URLSearchParams({
+    pa: UPI_ID,
+    pn: PAYEE_NAME,
+    am: amount.toString(),
+    cu: 'INR',
+    tn: 'Hadiya Sabeel',
+    tr: generateTxnId(),
+    mode: '05',
+  });
+  return `upi://pay?${params.toString()}`;
 }
 
-/**
- * Intent URL to open a SPECIFIC app on Android.
- * The key is: intent://pay?<upi_params>#Intent;scheme=upi;package=<app_package>;end
- *
- * This is the ONLY reliable way to target a specific UPI app from a web browser.
- * Plain upi://pay opens whatever app is the default handler (e.g. WhatsApp).
- *
- * Reference: https://stackoverflow.com/questions/61852954/how-to-invoke-upi-payment-apps-from-url
- */
-export function generateIntentUrl(amount: number, app: 'gpay' | 'phonepe' | 'paytm'): string {
-  const tr = generateTxnRef();
-  const params = `pa=${UPI_ID}&pn=${encodeURIComponent(UPI_PAYEE_NAME)}&am=${amount.toFixed(2)}&cu=INR&tr=${tr}&mc=0000&tn=${encodeURIComponent('Hadiya Sabeel')}`;
+export function getGPayDeepLink(amount: number): string {
+  const params = new URLSearchParams({
+    pa: UPI_ID,
+    pn: PAYEE_NAME,
+    am: amount.toString(),
+    cu: 'INR',
+    tn: 'Hadiya Sabeel',
+    tr: generateTxnId(),
+    mode: '05',
+  });
 
-  const packages: Record<string, string> = {
-    gpay: 'com.google.android.apps.nbu.paisa.user',
-    phonepe: 'com.phonepe.app',
-    paytm: 'net.one97.paytm',
-  };
+  // iOS uses gpay://, Android uses tez://
+  const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const scheme = isIOS ? 'gpay://upi/pay' : 'tez://upi/pay';
+  return `${scheme}?${params.toString()}`;
+}
 
-  return `intent://pay?${params}#Intent;scheme=upi;package=${packages[app]};end`;
+export function getPhonePeDeepLink(amount: number): string {
+  const params = new URLSearchParams({
+    pa: UPI_ID,
+    pn: PAYEE_NAME,
+    am: amount.toString(),
+    cu: 'INR',
+    tn: 'Hadiya Sabeel',
+    tr: generateTxnId(),
+    mode: '05',
+  });
+  return `phonepe://pay?${params.toString()}`;
 }
 
 export function getUPIId(): string {
   return UPI_ID;
+}
+
+/**
+ * Opens a deep link reliably on both iOS and Android.
+ * iOS blocks window.location.href for custom schemes from JS,
+ * so we use a temporary <a> tag click instead.
+ */
+export function openDeepLink(url: string): void {
+  const a = document.createElement('a');
+  a.href = url;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  // Clean up after a short delay
+  setTimeout(() => document.body.removeChild(a), 100);
 }
