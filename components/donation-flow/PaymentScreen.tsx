@@ -146,18 +146,6 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
           </div>
         </motion.div>
 
-        {/* Open UPI App Button */}
-        <motion.button
-          className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/20 to-[#C8A45D]/10 border-[#C8A45D]/30 text-[#C8A45D] mb-4`}
-          onClick={() => openDeepLink(upiUrl)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          {...fadeUp(0.38)}
-        >
-          📱 Open UPI App
-        </motion.button>
-
-
         {/* Completed Payment CTA */}
         <motion.button
           className={`${buttonBase} bg-gradient-to-r from-[#C8A45D]/20 to-[#C8A45D]/10 border-[#C8A45D]/30 text-[#C8A45D] text-base h-14`}
