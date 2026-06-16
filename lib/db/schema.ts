@@ -5,6 +5,7 @@ export const donations = pgTable('donations', {
   name: text('name').notNull(),
   phone: text('phone').notNull(),
   amount: integer('amount').notNull(),
+  paymentMethod: text('payment_method'),
   utr: text('utr'),
   screenshotBase64: text('screenshot_base64'),
   status: text('status').default('pending').notNull(),

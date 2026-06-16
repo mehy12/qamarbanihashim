@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, phone, amount, utr, screenshotBase64 } = body;
+    const { name, phone, amount, paymentMethod, utr, screenshotBase64 } = body;
 
     if (!name || !phone || !amount) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
       name,
       phone,
       amount: Number(amount),
+      paymentMethod: paymentMethod || null,
       utr: utr || null,
       screenshotBase64: screenshotBase64 || null,
       status: 'pending',

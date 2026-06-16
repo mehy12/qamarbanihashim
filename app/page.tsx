@@ -115,6 +115,7 @@ export default function Home() {
       utr?: string;
       screenshot?: string;
     }) => {
+      console.log('handleConfirmPayment called with paymentMethod:', paymentMethod);
       try {
         await fetch("/api/donations", {
           method: "POST",
@@ -123,6 +124,7 @@ export default function Home() {
             name,
             phone,
             amount,
+            paymentMethod,
             utr: data.utr || null,
             screenshotBase64: data.screenshot || null,
             status: data.confirmed ? "pending" : "incomplete",
@@ -133,7 +135,7 @@ export default function Home() {
       }
       goNext();
     },
-    [name, phone, amount, goNext]
+    [name, phone, amount, paymentMethod, goNext]
   );
 
   return (
@@ -281,3 +283,4 @@ export default function Home() {
     </>
   );
 }
+

@@ -9,6 +9,7 @@ interface Donation {
   name: string;
   phone: string;
   amount: number;
+  paymentMethod: string | null;
   utr: string | null;
   screenshotBase64: string | null;
   status: string;
@@ -171,11 +172,12 @@ function Dashboard() {
   // ── Export CSV ──
   const exportCSV = () => {
     if (!data?.donations.length) return;
-    const headers = ['Name', 'Phone', 'Amount', 'UTR', 'Status', 'Date'];
+    const headers = ['Name', 'Phone', 'Amount', 'Method', 'UTR', 'Status', 'Date'];
     const rows = data.donations.map((d) => [
       d.name,
       d.phone,
       d.amount.toString(),
+      d.paymentMethod || 'online',
       d.utr || '',
       d.status,
       new Date(d.createdAt).toLocaleString('en-IN'),
@@ -199,6 +201,7 @@ function Dashboard() {
         Name: d.name,
         Phone: d.phone,
         Amount: d.amount,
+        Method: d.paymentMethod || 'online',
         UTR: d.utr || '',
         Status: d.status,
         Date: new Date(d.createdAt).toLocaleString('en-IN'),
@@ -318,6 +321,7 @@ function Dashboard() {
                   <th className="text-left px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">Name</th>
                   <th className="text-left px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">Phone</th>
                   <th className="text-right px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">Amount</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">Method</th>
                   <th className="text-left px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">UTR</th>
                   <th className="text-center px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">Status</th>
                   <th className="text-right px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">Date</th>
@@ -326,7 +330,7 @@ function Dashboard() {
               <tbody>
                 {data?.donations.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="text-center py-12 text-white/20 text-sm">
+                    <td colSpan={7} className="text-center py-12 text-white/20 text-sm">
                       No donations yet
                     </td>
                   </tr>
@@ -343,6 +347,9 @@ function Dashboard() {
                     <td className="px-5 py-3.5 text-sm text-white/50 font-mono">{donation.phone}</td>
                     <td className="px-5 py-3.5 text-sm text-[#C8A45D] font-semibold text-right">
                       {formatCurrency(donation.amount)}
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-white/40 capitalize">
+                      {donation.paymentMethod || 'online'}
                     </td>
                     <td className="px-5 py-3.5 text-sm text-white/40 font-mono">
                       {donation.utr || '—'}
