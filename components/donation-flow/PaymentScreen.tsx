@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion'
 import { QRCodeCanvas } from 'qrcode.react'
-import { useState, useCallback } from 'react'
-import { generateUPIUrl, getUPIId, copyAndOpenApp } from '@/lib/upi'
+import { useState, useCallback, useMemo } from 'react'
+import { generateUPIUrl, getUPIId } from '@/lib/upi'
 
 interface PaymentScreenProps {
   amount: number
@@ -15,17 +15,11 @@ interface PaymentScreenProps {
 
 export default function PaymentScreen({ amount, name, phone, onNext, onBack }: PaymentScreenProps) {
   const [copied, setCopied] = useState(false)
-  const [appOpened, setAppOpened] = useState<string | null>(null)
   const vadapavCount = Math.floor(amount / 15)
 
-  const upiUrl = generateUPIUrl(amount)
+  // Generate the UPI URL once per render (contains unique tr each time)
+  const upiUrl = useMemo(() => generateUPIUrl(amount), [amount])
   const upiId = getUPIId()
-
-  const handleOpenApp = useCallback(async (app: 'gpay' | 'phonepe' | 'paytm' | 'any') => {
-    await copyAndOpenApp(app)
-    setAppOpened(app)
-    setTimeout(() => setAppOpened(null), 4000)
-  }, [])
 
   const handleCopyUPI = useCallback(async () => {
     try {
@@ -54,16 +48,20 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
     a.click()
   }, [amount])
 
+  /** Generate a fresh UPI URL with new tr and open it */
+  const openUPI = useCallback(() => {
+    window.location.href = generateUPIUrl(amount)
+  }, [amount])
+
   const fadeUp = (delay: number) => ({
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.5, delay, ease: 'easeOut' as const },
   })
 
-  const btnBase =
-    'w-full py-3.5 rounded-xl text-sm font-medium transition-all border'
-  const btnPrimary = `${btnBase} bg-gradient-to-r from-[#C8A45D]/20 to-[#C8A45D]/10 border-[#C8A45D]/30 text-[#C8A45D]`
-  const btnSecondary = `${btnBase} bg-gradient-to-r from-[#C8A45D]/15 to-[#C8A45D]/5 border-[#C8A45D]/20 text-[#C8A45D]/90`
+  const btn = 'w-full py-3.5 rounded-xl text-sm font-medium transition-all border'
+  const btnP = `${btn} bg-gradient-to-r from-[#C8A45D]/20 to-[#C8A45D]/10 border-[#C8A45D]/30 text-[#C8A45D]`
+  const btnS = `${btn} bg-gradient-to-r from-[#C8A45D]/15 to-[#C8A45D]/5 border-[#C8A45D]/20 text-[#C8A45D]/90`
 
   return (
     <motion.div
@@ -114,76 +112,40 @@ export default function PaymentScreen({ amount, name, phone, onNext, onBack }: P
           Download QR
         </motion.button>
 
-        {/* Toast when app is opened */}
-        {appOpened && (
-          <motion.div
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-[#C8A45D]/20 border border-[#C8A45D]/30 text-[#C8A45D] text-xs text-center"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            ✓ UPI ID copied! Paste it in the app and pay ₹{amount.toLocaleString('en-IN')}
-          </motion.div>
-        )}
-
+        {/* All buttons use the same upi://pay URL — system shows app chooser or opens specific app */}
         <div className="w-full space-y-3 mb-6">
-          <motion.button
-            className={btnPrimary}
-            onClick={() => handleOpenApp('any')}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            {...fadeUp(0.35)}
-          >
+          <motion.button className={btnP} onClick={openUPI}
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} {...fadeUp(0.35)}>
             Open Any UPI App
           </motion.button>
 
-          <motion.button
-            className={btnSecondary}
-            onClick={() => handleOpenApp('gpay')}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            {...fadeUp(0.4)}
-          >
+          <motion.button className={btnS} onClick={openUPI}
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} {...fadeUp(0.4)}>
             Open Google Pay
           </motion.button>
 
-          <motion.button
-            className={btnSecondary}
-            onClick={() => handleOpenApp('phonepe')}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            {...fadeUp(0.45)}
-          >
+          <motion.button className={btnS} onClick={openUPI}
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} {...fadeUp(0.45)}>
             Open PhonePe
           </motion.button>
 
-          <motion.button
-            className={btnSecondary}
-            onClick={() => handleOpenApp('paytm')}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            {...fadeUp(0.48)}
-          >
+          <motion.button className={btnS} onClick={openUPI}
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} {...fadeUp(0.48)}>
             Open Paytm
           </motion.button>
 
           <motion.button
-            className={`${btnBase} bg-white/5 border-white/10 text-[#BFAF8A]`}
+            className={`${btn} bg-white/5 border-white/10 text-[#BFAF8A]`}
             onClick={handleCopyUPI}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            {...fadeUp(0.5)}
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} {...fadeUp(0.5)}
           >
             {copied ? '✓ Copied!' : `Copy UPI ID: ${upiId}`}
           </motion.button>
         </div>
 
-        <motion.button
-          className={`${btnPrimary} text-base h-14`}
+        <motion.button className={`${btnP} text-base h-14`}
           onClick={onNext}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          {...fadeUp(0.55)}
-        >
+          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} {...fadeUp(0.55)}>
           I&apos;ve Completed Payment →
         </motion.button>
       </div>
