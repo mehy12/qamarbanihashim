@@ -16,6 +16,7 @@ export default function ConfirmPayment({ amount, paymentMethod, onSubmit, onBack
   const [utr, setUtr] = useState('')
   const [screenshot, setScreenshot] = useState<string | null>(null)
   const [screenshotName, setScreenshotName] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -29,6 +30,8 @@ export default function ConfirmPayment({ amount, paymentMethod, onSubmit, onBack
   }, [])
 
   const handleSubmit = () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     onSubmit({
       confirmed: confirmed === true,
       utr: utr || undefined,
@@ -206,15 +209,18 @@ export default function ConfirmPayment({ amount, paymentMethod, onSubmit, onBack
         {/* Submit Button */}
         {confirmed !== null && (
           <motion.button
-            className="w-full h-14 bg-gradient-to-r from-[#C8A45D]/20 to-[#C8A45D]/10 border border-[#C8A45D]/30 text-[#C8A45D] rounded-xl text-lg transition-all hover:from-[#C8A45D]/30 hover:to-[#C8A45D]/20"
+            className={`w-full h-14 bg-gradient-to-r from-[#C8A45D]/20 to-[#C8A45D]/10 border border-[#C8A45D]/30 text-[#C8A45D] rounded-xl text-lg transition-all ${
+              isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:from-[#C8A45D]/30 hover:to-[#C8A45D]/20'
+            }`}
             onClick={handleSubmit}
+            disabled={isSubmitting}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+            whileTap={!isSubmitting ? { scale: 0.98 } : {}}
           >
-            Submit →
+            {isSubmitting ? 'Submitting...' : 'Submit →'}
           </motion.button>
         )}
       </div>

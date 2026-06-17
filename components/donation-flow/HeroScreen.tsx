@@ -30,9 +30,7 @@ function AnimatedVadapavCount({ count }: { count: number }) {
 
 export default function HeroScreen({ amount, setAmount, onNext, stats }: HeroScreenProps) {
   const totalRaised = stats?.totalRaised ?? 0
-  const goal = 30000
-  const percentage = Math.min(Math.round((totalRaised / goal) * 100), 100)
-  const vadapavCount = Math.floor(amount / 15)
+  const vadapavCount = Math.floor(amount / 12)
 
   // Calculate slider fill percentage for dynamic background
   const sliderFillPercent = useMemo(() => {
@@ -52,23 +50,8 @@ export default function HeroScreen({ amount, setAmount, onNext, stats }: HeroScr
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-6 py-10 relative w-full max-w-md mx-auto">
-      
-      {/* Progress Bar (Top Anchored) */}
-      <motion.div className="w-full mb-12" {...fadeUp(0)}>
-        <div className="flex justify-between items-center mb-1.5">
-          <span className="text-[11px] text-[#BFAF8A]/80 tracking-wider">₹{totalRaised.toLocaleString('en-IN')} Raised of ₹30,000</span>
-          <span className="text-[11px] text-[#C8A45D] font-medium">{percentage}%</span>
-        </div>
-        <div className="w-full h-[2px] rounded-full bg-white/5 overflow-hidden">
-          <motion.div
-            className="h-full rounded-full"
-            style={{ background: '#C8A45D' }}
-            initial={{ width: 0 }}
-            animate={{ width: `${percentage}%` }}
-            transition={{ duration: 1.5, ease: 'easeOut', delay: 0.3 }}
-          />
-        </div>
-      </motion.div>
+
+
 
       {/* Compressed Header Area */}
       <motion.div className="text-center mb-12" {...fadeUp(0.15)}>
@@ -85,7 +68,7 @@ export default function HeroScreen({ amount, setAmount, onNext, stats }: HeroScr
 
       {/* Anchor: Amount and Slider Block */}
       <motion.div className="w-full flex flex-col items-center mb-12" {...fadeUp(0.3)}>
-        
+
         {/* Seamless Amount Element */}
         <div className="relative mb-2 flex items-center justify-center group">
           <input
@@ -124,13 +107,11 @@ export default function HeroScreen({ amount, setAmount, onNext, stats }: HeroScr
       </motion.div>
 
       {/* Elegant Stats Row (No Boxes) */}
-      <motion.div 
+      <motion.div
         className="flex items-center justify-center space-x-3 text-[11px] text-[#BFAF8A]/70 mb-10 tracking-wide"
         {...fadeUp(0.45)}
       >
         <span>2100+ Served</span>
-        <span className="text-[#C8A45D] opacity-50">•</span>
-        <span>₹30k Goal</span>
         <span className="text-[#C8A45D] opacity-50">•</span>
         <span>25+ Volunteers</span>
       </motion.div>
@@ -141,17 +122,17 @@ export default function HeroScreen({ amount, setAmount, onNext, stats }: HeroScr
         onClick={onNext}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        style={{ 
+        style={{
           boxShadow: '0 0 20px rgba(109,15,23,0.4)',
-          animationName: 'pulse-glow', 
-          animationDuration: '4s', 
-          animationIterationCount: 'infinite' 
+          animationName: 'pulse-glow',
+          animationDuration: '4s',
+          animationIterationCount: 'infinite'
         }}
         {...fadeUp(0.6)}
       >
         <ArrowRight className="w-6 h-6 text-[#C8A45D]" strokeWidth={1.5} />
       </motion.button>
-      
+
     </div>
   )
 }

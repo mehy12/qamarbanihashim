@@ -29,7 +29,7 @@ function PinGate({ onAuthenticated }: { onAuthenticated: () => void }) {
   const [shake, setShake] = useState(false);
 
   const handleSubmit = () => {
-    if (pin === '7860') {
+    if (pin === '0423') {
       sessionStorage.setItem('admin_auth', 'true');
       onAuthenticated();
     } else {
@@ -86,7 +86,7 @@ function PinGate({ onAuthenticated }: { onAuthenticated: () => void }) {
                 exit={{ opacity: 0, y: -5 }}
                 className="text-red-400 text-sm text-center mb-4"
               >
-                Invalid PIN
+                The webview is under maintainence. Please try again later!
               </motion.p>
             )}
           </AnimatePresence>
@@ -125,11 +125,10 @@ function StatusBadge({ status }: { status: string }) {
   const isPending = status === 'pending';
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-        isPending
-          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-          : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-      }`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isPending
+        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+        : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+        }`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${isPending ? 'bg-amber-400' : 'bg-emerald-400'}`} />
       {status}
@@ -145,7 +144,7 @@ function Dashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/donations?pin=7860');
+      const res = await fetch('/api/donations?pin=0423');
       if (!res.ok) throw new Error('Failed to fetch');
       const json = await res.json();
       setData(json);
@@ -163,6 +162,18 @@ function Dashboard() {
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, [fetchData]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this donation?')) return;
+    try {
+      const res = await fetch(`/api/donations?pin=0423&id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      fetchData();
+    } catch (err) {
+      alert('Failed to delete donation');
+      console.error(err);
+    }
+  };
 
   const todayCount = data?.donations.filter((d) => {
     const donationDate = new Date(d.createdAt).toDateString();
@@ -325,12 +336,13 @@ function Dashboard() {
                   <th className="text-left px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">UTR</th>
                   <th className="text-center px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">Status</th>
                   <th className="text-right px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">Date</th>
+                  <th className="text-center px-5 py-3.5 text-xs font-medium text-white/30 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {data?.donations.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-white/20 text-sm">
+                    <td colSpan={8} className="text-center py-12 text-white/20 text-sm">
                       No donations yet
                     </td>
                   </tr>
@@ -370,6 +382,17 @@ function Dashboard() {
                           minute: '2-digit',
                         })}
                       </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-center">
+                      <button
+                        onClick={() => handleDelete(donation.id)}
+                        className="text-red-400/50 hover:text-red-400 hover:bg-red-400/10 p-2 rounded-lg transition-all"
+                        title="Delete entry"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </td>
                   </motion.tr>
                 ))}

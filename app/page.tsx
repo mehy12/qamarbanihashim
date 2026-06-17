@@ -79,6 +79,7 @@ export default function Home() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'bank' | 'cash' | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Live stats
   const [stats, setStats] = useState<Stats | null>(null);
@@ -115,6 +116,8 @@ export default function Home() {
       utr?: string;
       screenshot?: string;
     }) => {
+      if (isSubmitting) return;
+      setIsSubmitting(true);
       console.log('handleConfirmPayment called with paymentMethod:', paymentMethod);
       try {
         await fetch("/api/donations", {
@@ -132,10 +135,12 @@ export default function Home() {
         });
       } catch (err) {
         console.error("Failed to submit donation:", err);
+      } finally {
+        setIsSubmitting(false);
       }
       goNext();
     },
-    [name, phone, amount, paymentMethod, goNext]
+    [name, phone, amount, paymentMethod, goNext, isSubmitting]
   );
 
   return (

@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { donations } from '@/lib/db/schema';
-import { desc, sql } from 'drizzle-orm';
+import { desc, sql, eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -34,11 +34,20 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const pin = searchParams.get('pin');
 
-    if (pin !== '7860') {
+    if (pin !== '0423') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const allDonations = await db.select().from(donations).orderBy(desc(donations.createdAt));
+    const allDonations = await db.select({
+      id: donations.id,
+      name: donations.name,
+      phone: donations.phone,
+      amount: donations.amount,
+      paymentMethod: donations.paymentMethod,
+      utr: donations.utr,
+      status: donations.status,
+      createdAt: donations.createdAt,
+    }).from(donations).orderBy(desc(donations.createdAt));
 
     const [stats] = await db.select({
       totalRaised: sql<number>`COALESCE(SUM(${donations.amount}), 0)`,
@@ -53,5 +62,28 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching donations:', error);
     return NextResponse.json({ error: 'Failed to fetch donations' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const pin = searchParams.get('pin');
+    const id = searchParams.get('id');
+
+    if (pin !== '0423') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+    }
+
+    await db.delete(donations).where(eq(donations.id, id));
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting donation:', error);
+    return NextResponse.json({ error: 'Failed to delete donation' }, { status: 500 });
   }
 }
