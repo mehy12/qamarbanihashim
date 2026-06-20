@@ -29,7 +29,7 @@ function PinGate({ onAuthenticated }: { onAuthenticated: () => void }) {
   const [shake, setShake] = useState(false);
 
   const handleSubmit = () => {
-    if (pin === '0423') {
+    if (pin === '7860') {
       sessionStorage.setItem('admin_auth', 'true');
       onAuthenticated();
     } else {
@@ -144,7 +144,7 @@ function Dashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/donations?pin=0423');
+      const res = await fetch('/api/donations?pin=7860');
       if (!res.ok) throw new Error('Failed to fetch');
       const json = await res.json();
       setData(json);
@@ -166,7 +166,7 @@ function Dashboard() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this donation?')) return;
     try {
-      const res = await fetch(`/api/donations?pin=0423&id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/donations?pin=7860&id=${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       fetchData();
     } catch (err) {

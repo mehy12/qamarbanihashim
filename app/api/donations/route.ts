@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const pin = searchParams.get('pin');
 
-    if (pin !== '0423') {
+    if (pin !== '7860') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -71,7 +71,7 @@ export async function DELETE(request: NextRequest) {
     const pin = searchParams.get('pin');
     const id = searchParams.get('id');
 
-    if (pin !== '0423') {
+    if (pin !== '7860') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
